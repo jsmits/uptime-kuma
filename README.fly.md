@@ -72,10 +72,39 @@ CNAME uptime.smits.dev. uptime-kuma-smits-dev.fly.dev.
 Create the certificate:
 
 ```
-$ flyctl certs create uptime.smits.dev  
+$ flyctl certs create uptime.smits.dev
 ```
 
 ## Configure
 
 Now go to https://uptime.smits.dev to configure it.
 
+## Backup
+
+Create the backup directory, for example:
+
+```
+$ mkdir -p /Users/jsmits/d/backup/uptime-kuma/20241017201800
+```
+
+Issue a new SSH certificate and add it to the SSH agent:
+
+```
+$ fly ssh issue --agent
+```
+
+Download the `kuma.db*` files from the mounted `/app/data` volume in the `uptime-kuma` container:
+
+```
+$ fly ssh sftp get /app/data/kuma.db /Users/jsmits/d/backup/uptime-kuma/20241017201800/kuma.db
+$ fly ssh sftp get /app/data/kuma.db-shm /Users/jsmits/d/backup/uptime-kuma/20241017201800/kuma.db-shm
+$ fly ssh sftp get /app/data/kuma.db-wal /Users/jsmits/d/backup/uptime-kuma/20241017201800/kuma.db-wal
+```
+
+### Use locally
+
+To run an `uptime-kuma` container with these files, ideally using the same version as deployed on `fly`, do something like this:
+
+```
+$ docker run -it --rm -p 3001:3001 -v /Users/jsmits/d/backup/uptime-kuma/20241017201800:/app/data elestio/uptime-kuma:1.23.13
+```
